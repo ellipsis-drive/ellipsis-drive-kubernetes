@@ -6,6 +6,7 @@ if [ "$#" -ne 2 ]; then
 fi
 
 docker run \
+  -d \
   -e POSTGRES_PASSWORD=$2 \
   -p 5432:5432 \
   $1 \
