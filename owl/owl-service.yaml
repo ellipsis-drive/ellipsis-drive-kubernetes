@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: owl
+spec:
+  type: ClusterIP
+  selector:
+    ellipsis-drive: owl
+  ports:
+    - port: 5432
+      targetPort: 5432
