@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penguin
+spec:
+  selector:
+    matchLabels:
+      ellipsis-drive: penguin
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: penguin
+    spec:
+      containers:
+      - name: penguin
+        image: ghcr.io/ellipsis-drive/penguin:latest
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+        - name: ghcr-secret
