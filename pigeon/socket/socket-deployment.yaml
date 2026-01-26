@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: socket-deployment
+  labels:
+    ellipsis-drive: socket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: socket
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: socket
+    spec:
+      containers:
+      - name: socket
+        image: ghcr.io/ellipsis-drive/socket:latest
+        ports:
+          - containerPort: 7754
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

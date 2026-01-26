@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-db-deployment
+  labels:
+    ellipsis-drive: cache-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: cache-db
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: cache-db
+    spec:
+      containers:
+      - name: cache-db
+        image: ghcr.io/ellipsis-drive/cache-db:latest
+        ports:
+          - containerPort: 5432
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+  labels:
+    ellipsis-drive: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: api
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: api
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/ellipsis-drive/api:latest
+        ports:
+          - containerPort: 7556
+        env:
+          - name: POSTGRES_APP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: owl-db-password
+                key: password
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
