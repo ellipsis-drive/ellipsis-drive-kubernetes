@@ -25,6 +25,11 @@ spec:
               secretKeyRef:
                 name: owl-db-password
                 key: password
+          - name: POSTGRES_APP_PASS_SHAPE
+            valueFrom:
+              secretKeyRef:
+                name: rooster-db-password
+                key: password
         envFrom:
           - configMapRef:
               name: ellipsis
@@ -33,7 +38,6 @@ spec:
             mountPath: /mnt/etmpfs
       imagePullSecrets:
         - name: dockerconfigjson-github-com
-
       volumes:
         - name: etmpfs
           persistentVolumeClaim:
