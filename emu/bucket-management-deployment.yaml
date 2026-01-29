@@ -1,24 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: socket-deployment
+  name: bucket-management-deployment
   labels:
-    ellipsis-drive: socket
+    ellipsis-drive: bucket-management
 spec:
   replicas: 1
   selector:
     matchLabels:
-      ellipsis-drive: socket
+      ellipsis-drive: bucket-management
   template:
     metadata:
       labels:
-        ellipsis-drive: socket
+        ellipsis-drive: bucket-management
     spec:
+      serviceAccountName: s3-access-sa
       containers:
-      - name: socket
-        image: ghcr.io/ellipsis-drive/socket:latest
-        ports:
-          - containerPort: 7754
+      - name: bucket-management
+        image: ghcr.io/ellipsis-drive/bucket-management:latest
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:

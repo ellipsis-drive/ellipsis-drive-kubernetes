@@ -30,4 +30,4 @@ COPY --from=builder --chown=ellipsis:ellipsis /app /app
 USER ellipsis
 
 # Start the application
-CMD ["node", "api.js", "v3"]
+CMD ["node", "run.js", "bucketManagement"]
