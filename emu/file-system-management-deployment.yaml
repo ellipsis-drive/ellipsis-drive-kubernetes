@@ -30,6 +30,8 @@ spec:
         volumeMounts:
           - name: etmpfs
             mountPath: /mnt/etmpfs
+          - name: finch-1-fra
+            mountPath: /mnt/finch-1-eu-central-1
       imagePullSecrets:
         - name: dockerconfigjson-github-com
 
@@ -37,3 +39,6 @@ spec:
         - name: etmpfs
           persistentVolumeClaim:
             claimName: etmpfs
+        - name: finch-1-fra
+          persistentVolumeClaim:
+            claimName: finch-1-fra
