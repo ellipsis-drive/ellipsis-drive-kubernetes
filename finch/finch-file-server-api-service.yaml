@@ -7,5 +7,5 @@ spec:
   selector:
     ellipsis-drive: finch-file-server-api
   ports:
-    - port: 8738
+    - port: 80
       targetPort: 8738
