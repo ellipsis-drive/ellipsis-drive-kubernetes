@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: create-shape-bounds-deployment
+  labels:
+    ellipsis-drive: create-shape-bounds
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: create-shape-bounds
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: create-shape-bounds
+    spec:
+      containers:
+      - name: create-shape-bounds
+        image: ghcr.io/ellipsis-drive/create-shape-bounds:latest
+        env:
+          - name: POSTGRES_APP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: owl-db-password
+                key: password
+          - name: POSTGRES_APP_PASS_SHAPE
+            valueFrom:
+              secretKeyRef:
+                name: rooster-db-password
+                key: password
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+        volumeMounts:
+          - name: etmpfs
+            mountPath: /mnt/etmpfs
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
+
+      volumes:
+        - name: etmpfs
+          persistentVolumeClaim:
+            claimName: etmpfs

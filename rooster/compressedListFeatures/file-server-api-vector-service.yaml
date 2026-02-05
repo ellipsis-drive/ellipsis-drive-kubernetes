@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rooster-1-list-features
+spec:
+  type: ClusterIP
+  selector:
+    ellipsis-drive: rooster-1-list-features
+  ports:
+    - port: 80
+      targetPort: 8738
