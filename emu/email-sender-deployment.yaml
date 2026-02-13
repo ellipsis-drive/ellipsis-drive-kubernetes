@@ -17,6 +17,9 @@ spec:
       containers:
       - name: email-sender
         image: ghcr.io/ellipsis-drive/email-sender:latest
+        resources:
+          requests:
+            cpu: 500m
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:

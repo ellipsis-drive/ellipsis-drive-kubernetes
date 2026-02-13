@@ -17,6 +17,9 @@ spec:
       containers:
       - name: cache-db
         image: ghcr.io/ellipsis-drive/cache-db:latest
+        resources:
+          requests:
+            cpu: 1
         ports:
           - containerPort: 5432
         envFrom:

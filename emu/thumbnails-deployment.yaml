@@ -17,6 +17,9 @@ spec:
       containers:
       - name: thumbnails
         image: ghcr.io/ellipsis-drive/thumbnails:latest
+        resources:
+          requests:
+            cpu: 2
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:
