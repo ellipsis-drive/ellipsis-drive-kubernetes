@@ -19,7 +19,8 @@ spec:
         image: ghcr.io/ellipsis-drive/raster-worker:latest
         resources:
           requests:
-            cpu: 2
+            cpu: 4
+            memory: 32Gi
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:
@@ -47,4 +48,4 @@ spec:
         - name: tmpfs
           emptyDir:
             medium: Memory
-            sizeLimit: 128Mi
+            sizeLimit: 2Gi
