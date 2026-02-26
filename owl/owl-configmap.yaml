@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: owl-postgres-config
+data:
+  postgresql.conf: |
+    listen_addresses = '*'
+    wal_level = logical
+    max_replication_slots = 10
+    max_wal_senders = 10
+
+  pg_hba.conf: |
+    # TYPE DATABASE USER ADDRESS METHOD 
+    # Allow local connections 
+    local all all trust 
+    # Allow normal connections 
+    host all all 0.0.0.0/0 md5 
+    # Required for logical replication 
+    host replication ellipsis_app 0.0.0.0/0 md5

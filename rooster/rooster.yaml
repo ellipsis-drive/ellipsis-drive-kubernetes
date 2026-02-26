@@ -23,14 +23,26 @@ spec:
               cpu: 500m
           ports:
             - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: ellipsis
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: rooster-db-password
                   key: password
+            - name: POSTGRES_APP_PASS_OWL
+              valueFrom:
+                secretKeyRef:
+                  name: owl-db-password
+                  key: password
             - name: PGDATA
               value: /mnt/db/pgdata
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           volumeMounts:
             - name: rooster-db
               mountPath: /mnt/db

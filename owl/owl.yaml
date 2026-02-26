@@ -31,11 +31,22 @@ spec:
                   key: password
             - name: PGDATA
               value: /mnt/db/pgdata
+          args:
+            - "-c"
+            - "config_file=/etc/postgres-config/postgresql.conf"
+            - "-c"
+            - "hba_file=/etc/postgres-config/pg_hba.conf"
           volumeMounts:
+            - name: postgres-config
+              mountPath: /etc/postgres-config
             - name: owl-db-2
               mountPath: /mnt/db
       imagePullSecrets:
         - name: ghcr-secret
+      volumes:
+        - name: postgres-config
+          configMap:
+            name: owl-postgres-config
   volumeClaimTemplates:
     - metadata:
         name: owl-db-2

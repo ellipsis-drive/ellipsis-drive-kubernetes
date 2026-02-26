@@ -19,7 +19,7 @@ spec:
         image: ghcr.io/ellipsis-drive/oauth-management:latest
         resources:
           requests:
-            cpu: 500m
+            cpu: 250m
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:
