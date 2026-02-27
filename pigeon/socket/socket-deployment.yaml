@@ -5,7 +5,7 @@ metadata:
   labels:
     ellipsis-drive: socket
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       ellipsis-drive: socket
@@ -46,6 +46,8 @@ spec:
               secretKeyRef:
                 name: pigeon-socket-handshake
                 key: python
+          - name: NUMBER_OF_API_PROCESSES
+            value: "2"
         volumeMounts:
           - name: etmpfs
             mountPath: /mnt/etmpfs
