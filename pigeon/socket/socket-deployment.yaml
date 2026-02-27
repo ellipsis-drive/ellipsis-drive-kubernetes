@@ -22,6 +22,9 @@ spec:
             cpu: 2
         ports:
           - containerPort: 7754
+        envFrom:
+          - configMapRef:
+              name: ellipsis
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:
@@ -33,9 +36,16 @@ spec:
               secretKeyRef:
                 name: pigeon-db-password
                 key: password
-        envFrom:
-          - configMapRef:
-              name: ellipsis
+          - name: API_TO_PYTHON_HANDSHAKE
+            valueFrom:
+              secretKeyRef:
+                name: pigeon-socket-handshake
+                key: api
+          - name: PYTHON_TO_API_HANDSHAKE
+            valueFrom:
+              secretKeyRef:
+                name: pigeon-socket-handshake
+                key: python
         volumeMounts:
           - name: etmpfs
             mountPath: /mnt/etmpfs

@@ -35,6 +35,21 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
+          - name: ELLIPSIS_INTERNAL_KEY_VECTOR
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: vector
         envFrom:
           - configMapRef:
               name: ellipsis

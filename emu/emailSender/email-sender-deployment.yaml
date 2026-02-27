@@ -26,6 +26,16 @@ spec:
               secretKeyRef:
                 name: owl-db-password
                 key: password
+          - name: NOREPLY_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: noreply-mail
+                key: username
+          - name: NOREPLY_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: noreply-mail
+                key: password
         envFrom:
           - configMapRef:
               name: ellipsis

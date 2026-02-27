@@ -19,6 +19,17 @@ spec:
         image: ghcr.io/ellipsis-drive/file-server-api-vector:latest
         ports:
           - containerPort: 8738
+        env:
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
         envFrom:
           - configMapRef:
               name: ellipsis

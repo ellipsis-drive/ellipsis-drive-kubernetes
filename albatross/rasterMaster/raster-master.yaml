@@ -31,6 +31,16 @@ spec:
             value: "0"
           - name: MAX_WORKERS
             value: "2"
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
         envFrom:
           - configMapRef:
               name: ellipsis

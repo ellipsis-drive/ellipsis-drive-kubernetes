@@ -27,6 +27,16 @@ spec:
               secretKeyRef:
                 name: owl-db-password
                 key: password
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
         envFrom:
           - configMapRef:
               name: ellipsis

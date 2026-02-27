@@ -23,6 +23,9 @@ spec:
             cpu: 1
         ports:
           - containerPort: 7556
+        envFrom:
+          - configMapRef:
+              name: ellipsis
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:
@@ -39,9 +42,71 @@ spec:
               secretKeyRef:
                 name: rooster-db-password
                 key: password
-        envFrom:
-          - configMapRef:
-              name: ellipsis
+          - name: API_TO_PYTHON_HANDSHAKE
+            valueFrom:
+              secretKeyRef:
+                name: pigeon-socket-handshake
+                key: api
+          - name: PYTHON_TO_API_HANDSHAKE
+            valueFrom:
+              secretKeyRef:
+                name: pigeon-socket-handshake
+                key: python
+          - name: SECRET
+            valueFrom:
+              secretKeyRef:
+                name: secret
+                key: secret
+          - name: OAUTH_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: oauth-secret
+                key: secret
+          - name: GOOGLE_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: google-client
+                key: id
+          - name: GOOGLE_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: google-client
+                key: secret
+          - name: ELLIPSIS_INTERNAL_KEY_GET_CACHE
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: get-cache
+          - name: ELLIPSIS_INTERNAL_KEY_POINT_CLOUD
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: point-cloud
+          - name: ELLIPSIS_INTERNAL_KEY_PROCESS
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: process
+          - name: ELLIPSIS_INTERNAL_KEY_RASTER
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: raster
+          - name: ELLIPSIS_INTERNAL_KEY_REDIRECT
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: redirect
+          - name: ELLIPSIS_INTERNAL_KEY_SANITY_VECTOR
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: sanity-vector
+          - name: ELLIPSIS_INTERNAL_KEY_VECTOR
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: vector
         volumeMounts:
           - name: etmpfs
             mountPath: /mnt/etmpfs
