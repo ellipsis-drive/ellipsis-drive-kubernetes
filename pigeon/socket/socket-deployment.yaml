@@ -19,7 +19,7 @@ spec:
         image: ghcr.io/ellipsis-drive/socket:latest
         resources:
           requests:
-            cpu: 2
+            cpu: 500m
         ports:
           - containerPort: 7754
         envFrom:

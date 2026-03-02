@@ -17,9 +17,9 @@ spec:
       containers:
       - name: process-hard-deletes
         image: ghcr.io/ellipsis-drive/process-hard-deletes:latest
-        resources:
-          requests:
-            cpu: 250m
+        # resources:
+        #   requests:
+        #     cpu: 250m
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:

@@ -17,9 +17,9 @@ spec:
       containers:
       - name: subscription-monitor
         image: ghcr.io/ellipsis-drive/subscription-monitor:latest
-        resources:
-          requests:
-            cpu: 250m
+        # resources:
+        #   requests:
+        #     cpu: 250m
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:

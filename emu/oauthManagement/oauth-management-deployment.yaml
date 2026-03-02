@@ -17,9 +17,9 @@ spec:
       containers:
       - name: oauth-management
         image: ghcr.io/ellipsis-drive/oauth-management:latest
-        resources:
-          requests:
-            cpu: 250m
+        # resources:
+        #   requests:
+        #     cpu: 250m
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:
