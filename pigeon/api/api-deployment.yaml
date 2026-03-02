@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-deployment
+  name: api
   labels:
     ellipsis-drive: api
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       ellipsis-drive: api
@@ -20,7 +20,7 @@ spec:
         image: ghcr.io/ellipsis-drive/api:latest
         resources:
           requests:
-            cpu: 1
+            cpu: 500m
         ports:
           - containerPort: 7556
         envFrom:

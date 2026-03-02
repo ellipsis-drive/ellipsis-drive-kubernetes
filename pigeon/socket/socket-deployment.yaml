@@ -5,7 +5,7 @@ metadata:
   labels:
     ellipsis-drive: socket
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       ellipsis-drive: socket
@@ -19,7 +19,7 @@ spec:
         image: ghcr.io/ellipsis-drive/socket:latest
         resources:
           requests:
-            cpu: 2
+            cpu: 500m
         ports:
           - containerPort: 7754
         envFrom:
@@ -46,6 +46,8 @@ spec:
               secretKeyRef:
                 name: pigeon-socket-handshake
                 key: python
+          - name: NUMBER_OF_API_PROCESSES
+            value: "2"
         volumeMounts:
           - name: etmpfs
             mountPath: /mnt/etmpfs

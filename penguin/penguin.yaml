@@ -16,7 +16,7 @@ spec:
         image: ghcr.io/ellipsis-drive/penguin:latest
         resources:
           requests:
-            cpu: 1
+            cpu: 100m
         ports:
         - containerPort: 80
       imagePullSecrets:

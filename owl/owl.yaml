@@ -20,7 +20,7 @@ spec:
           image: ghcr.io/ellipsis-drive/owl:latest
           resources:
             requests:
-              cpu: 1
+              cpu: 500m
           ports:
             - containerPort: 5432
           env:

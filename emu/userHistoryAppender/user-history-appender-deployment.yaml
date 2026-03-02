@@ -17,9 +17,9 @@ spec:
       containers:
       - name: user-history-appender
         image: ghcr.io/ellipsis-drive/user-history-appender:latest
-        resources:
-          requests:
-            cpu: 250m
+        # resources:
+        #   requests:
+        #     cpu: 250m
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:

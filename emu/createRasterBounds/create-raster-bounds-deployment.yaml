@@ -19,7 +19,7 @@ spec:
         image: ghcr.io/ellipsis-drive/create-raster-bounds:latest
         resources:
           requests:
-            cpu: 1
+            cpu: 100m
         env:
           - name: POSTGRES_APP_PASS
             valueFrom:
