@@ -183,3 +183,14 @@ async function createPigeon(config) {
   await kubectl.apply('../pigeon/cache-db/cache-db-deployment.yaml');
   await kubectl.apply('../pigeon/cache-db/cache-db-service.yaml');
 }
+
+async function createRooster(config) {
+  kubectl.apply('../rooster/rooster-pdb.yaml');
+  kubectl.apply('../rooster/rooster-queries-config-map.yaml');
+  kubectl.apply('../rooster/rooster-service.yaml');
+  kubectl.apply('../rooster/rooster.yaml');
+
+  kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-deployment.yaml');
+  kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-service.yaml');
+  kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-stateful-set.yaml');
+}
