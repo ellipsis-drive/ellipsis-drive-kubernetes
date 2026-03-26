@@ -6,20 +6,7 @@ const cmd = require('./cmd');
 
 module.exports = {
   create: async (config) => {
-    let clusterTemplate = utilities.loadFile('../cluster.yaml.template');
-
-    let keys = [
-      'clusterName',
-      'kubernetesVersion'
-    ];
-    
-    let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
-
-    clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
-
-    utilities.saveFile('../build/cluster.yaml', clusterTemplate);
-
-    eksctl.createCluster('../build/cluster.yaml', true);
+    await createCluster(config)
 
     kubectl.setGitSecret(config.licenseKey);
 
@@ -46,6 +33,23 @@ module.exports = {
     await createRooster(config);
     await createPenguin(config);
   }
+}
+
+async function createCluster(config) {
+  let clusterTemplate = utilities.loadFile('../cluster.yaml.template');
+
+  let keys = [
+    'clusterName',
+    'kubernetesVersion'
+  ];
+
+  let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('../build/cluster.yaml', clusterTemplate);
+
+  eksctl.createCluster('../build/cluster.yaml', true);
 }
 
 async function applyPolicies(config) {
