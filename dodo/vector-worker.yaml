@@ -59,7 +59,7 @@ spec:
           - name: tmpfs
             mountPath: /mnt/tmpfs  
       imagePullSecrets:
-        - name: dockerconfigjson-github-com
+        - name: ghcr-secret
       volumes:
         - name: etmpfs
           persistentVolumeClaim:

@@ -53,7 +53,7 @@ spec:
           - name: etmpfs
             mountPath: /mnt/etmpfs
       imagePullSecrets:
-        - name: dockerconfigjson-github-com
+        - name: ghcr-secret
 
       volumes:
         - name: etmpfs

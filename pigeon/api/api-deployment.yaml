@@ -113,7 +113,7 @@ spec:
           - name: finch-1
             mountPath: /mnt/finch
       imagePullSecrets:
-        - name: dockerconfigjson-github-com
+        - name: ghcr-secret
       volumes:
         - name: etmpfs
           persistentVolumeClaim:

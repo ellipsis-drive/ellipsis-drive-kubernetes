@@ -45,4 +45,4 @@ spec:
           - configMapRef:
               name: ellipsis
       imagePullSecrets:
-        - name: dockerconfigjson-github-com
+        - name: ghcr-secret

@@ -42,4 +42,4 @@ spec:
                 name: ellipsis
                 key: POSTGRES_USER_LOCAL
       imagePullSecrets:
-        - name: dockerconfigjson-github-com
+        - name: ghcr-secret
