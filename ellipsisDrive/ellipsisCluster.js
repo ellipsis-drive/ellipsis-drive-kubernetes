@@ -194,3 +194,25 @@ async function createRooster(config) {
   kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-service.yaml');
   kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-stateful-set.yaml');
 }
+
+async function createPenguin(config) {
+  let certificateArn = await aws.createCertificate(config.frontendUrl);
+
+  let clusterTemplate = utilities.loadFile('../penguin/penguin-ingress.yaml');
+
+  let keys = [
+    'frontendUrl'
+  ];
+
+  let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+
+  substitutes.push({ key: 'frontendCertificate', value: certificateArn });
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('../build/penguin-ingress.yaml', clusterTemplate);
+
+  kubectl.apply('../build/penguin-ingress.yaml');
+  kubectl.apply('../penguin/penguin-service.yaml');
+  kubectl.apply('../penguin/penguin.yaml');
+}

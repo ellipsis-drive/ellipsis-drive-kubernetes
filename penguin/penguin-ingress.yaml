@@ -13,11 +13,11 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS":443}]'
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-central-1:758738941592:certificate/7e4e19a9-3733-42fb-b6f7-cd892d54bf25
+    alb.ingress.kubernetes.io/certificate-arn: <<<frontendCertificate>>>
 spec:
   ingressClassName: alb
   rules:
-    - host: kubernetes.ellipsis-drive.com
+    - host: <<<frontendUrl>>>
       http:
         paths:
           - path: /
