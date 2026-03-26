@@ -30,6 +30,19 @@ module.exports = {
     await applyStorage(config);
 
     await applyVarious(config);
+
+    await setupEllipsisConfigmap(config);
+
+    await setupCloudnativepg(config);
+
+    await setupIngress(config);
+
+    await createOwl(config);
+    await createPigeon(config);
+    await createEmu(config);
+    await createAlbatross(config);
+    await createRooster(config);
+    await createPenguin(config);
   }
 }
 
