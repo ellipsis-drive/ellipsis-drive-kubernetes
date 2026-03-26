@@ -107,8 +107,8 @@ async function applyVarious(config) {
 }
 
 async function createOwl(config) {
-  kubectl.apply('../owl/owl-configmap.yaml');
-  kubectl.apply('../owl/owl-queries-config-map.yaml');
+  kubectl.apply('../owl/owl-pdb.yaml');
+  kubectl.create('../owl/owl-queries-config-map.yaml');
   kubectl.apply('../owl/owl-service.yaml');
   kubectl.apply('../owl/owl.yaml');
 }

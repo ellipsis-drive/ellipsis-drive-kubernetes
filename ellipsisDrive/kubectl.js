@@ -5,6 +5,10 @@ module.exports = {
     await cmd.executeCommandSimple(`kubectl apply -f ${path}`);
   },
 
+  create: async (path) => {
+    await cmd.executeCommandSimple(`kubectl create -f ${path}`);
+  },
+
   setGitSecret: async (secret) => {
     await cmd.executeCommandSimple(`kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=ellipsis-drive --docker-password=${secret}`);
   },
