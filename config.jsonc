@@ -23,5 +23,10 @@
   "noReplyMailPassword": "foobar",
 
   "googleClientId": "foobar",
-  "googleClientSecret": "foobar"
+  "googleClientSecret": "foobar",
+
+  "apiUrl": "kubernetes.api.ellipsis-drive.com",
+  "frontendUrl": "kubernetes.ellipsis-drive.com",
+  "masterZone": "eu-central-1",
+  "masterZoneAbbreviation": "fra"
 }

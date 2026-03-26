@@ -119,3 +119,67 @@ async function createAlbatross(config) {
   kubectl.apply('../albatross/vectorMaster/vector-master.yaml');
   kubectl.apply('../albatross/pointCloud/point-cloud-master.yaml');
 }
+
+async function setupIngress(config) {
+  await kubectl.apply('../ingress/ingress.yaml');
+}
+
+async function setupCloudnativepg(config) {
+  await kubectl.apply('https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.28/releases/cnpg-1.28.1.yaml');
+}
+
+async function setupEllipsisConfigmap(config) {
+  let clusterTemplate = utilities.loadFile('./ellipsis.env');
+
+  let keys = [
+    'apiUrl',
+    'masterZone',
+    'masterZoneAbbreviation',
+    'frontendUrl'
+  ];
+
+  let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('../build/ellipsis.env', clusterTemplate);
+
+  await kubectl.createConfigmap('ellipsis', { type: file, fileName: '../build/ellipsis.env' });
+}
+
+async function createPigeon(config) {
+  let certificateArn = await aws.createCertificate(config.apiUrl);
+
+  let clusterTemplate = utilities.loadFile('../pigeon/api/api-ingress.yaml');
+
+  let keys = [
+    'apiUrl'
+  ];
+
+  let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+
+  substitutes.push({ key: 'apiCertificate', value: certificateArn });
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('../build/api-ingress.yaml', clusterTemplate);
+
+  await kubectl.apply('../pigeon/api/api-pdb.yaml');
+  await kubectl.apply('../pigeon/api/api-deployment.yaml');
+  await kubectl.apply('../pigeon/api/api-service.yaml');
+  await kubectl.apply('../build/api-ingress.yaml');
+
+  await kubectl.apply('../pigeon/actionsWriter/actions-writer-deployment.yaml');
+
+  await kubectl.apply('../pigeon/invalidator/invalidator.yaml');
+
+  await kubectl.apply('../pigeon/flask/flask-pdb.yaml');
+  await kubectl.apply('../pigeon/flask/flask-deployment.yaml');
+  await kubectl.apply('../pigeon/flask/flask-service.yaml');
+
+  await kubectl.apply('../pigeon/api/cache-pdb.yaml');
+  await kubectl.apply('../pigeon/api/cache-queries-config-map.yaml');
+  await kubectl.apply('../pigeon/cache-db/cache-db-cloudnativepg.yaml');
+  await kubectl.apply('../pigeon/cache-db/cache-db-deployment.yaml');
+  await kubectl.apply('../pigeon/cache-db/cache-db-service.yaml');
+}

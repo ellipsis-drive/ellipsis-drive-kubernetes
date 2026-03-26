@@ -18,5 +18,9 @@ module.exports = {
 
   createPriorityClass: async (name, value) => {
     await cmd.executeCommandSimple(`kubectl create priorityclass ${name} --value=${value} --global-default=false`);
+  },
+
+  createConfigmap: async (name, dataSource) => {
+    await cmd.executeCommandSimple(`kubectl create configmap ${name} ${dataSource.type === 'file' ? `--from-file=${dataSource.fileName}` : ''}`);
   }
 }

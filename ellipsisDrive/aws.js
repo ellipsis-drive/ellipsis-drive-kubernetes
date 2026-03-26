@@ -7,5 +7,13 @@ module.exports = {
     policyInfo = JSON.parse(policyInfo);
 
     return policyInfo
+  },
+
+  createCertificate: async (name, documentPath) => {
+    let certificate = await cmd.executeCommandSimple(`aws acm request-certificate --domain-name ${name}`);
+
+    certificate = JSON.parse(certificate);
+
+    return certificate.CertificateArn;
   }
 }
