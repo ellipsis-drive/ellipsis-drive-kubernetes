@@ -8,7 +8,7 @@ module.exports = {
   create: async (config) => {
     await createCluster(config)
 
-    kubectl.setGitSecret(config.licenseKey);
+    await setLicenseSecret(config);
 
     await applyPolicies(config);
 
@@ -32,7 +32,24 @@ module.exports = {
     await createAlbatross(config);
     await createRooster(config);
     await createPenguin(config);
-  }
+  },
+
+  createCluster: createCluster,
+  setLicenseSecret: setLicenseSecret,
+  applyPolicies: applyPolicies,
+  applySecrets: applySecrets,
+  applyStorage: applyStorage,
+  applyVarious: applyVarious,
+  createBuckets: createBuckets,
+  createOwl: createOwl,
+  createAlbatross: createAlbatross,
+  setupIngress: setupIngress,
+  setupCloudnativepg: setupCloudnativepg,
+  setupEllipsisConfigmap: setupEllipsisConfigmap,
+  createPigeon: createPigeon,
+  createRooster: createRooster,
+  createPenguin: createPenguin,
+  createEmu: createEmu
 }
 
 async function createCluster(config) {
@@ -50,6 +67,10 @@ async function createCluster(config) {
   utilities.saveFile('../build/cluster.yaml', clusterTemplate);
 
   eksctl.createCluster('../build/cluster.yaml', true);
+}
+
+async function setLicenseSecret(config) {
+  kubectl.setGitSecret(config.licenseKey);
 }
 
 async function applyPolicies(config) {
