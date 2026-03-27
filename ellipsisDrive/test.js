@@ -6,5 +6,6 @@ test();
 async function test() {
   let config = loadConfig();
   
-  await ellipsis.createCluster(config);
+  let vpcId = await ellipsis.createVpc(config);
+  console.log(vpcId);
 }

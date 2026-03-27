@@ -6,6 +6,8 @@ const cmd = require('./cmd');
 
 module.exports = {
   create: async (config) => {
+    let vpcId = await createVpc(config);
+
     await createCluster(config)
 
     await setLicenseSecret(config);
@@ -34,6 +36,7 @@ module.exports = {
     await createPenguin(config);
   },
 
+  createVpc: createVpc,
   createCluster: createCluster,
   setLicenseSecret: setLicenseSecret,
   applyPolicies: applyPolicies,
@@ -67,6 +70,43 @@ async function createCluster(config) {
   utilities.saveFile('../build/cluster.yaml', clusterTemplate);
 
   eksctl.createCluster('../build/cluster.yaml', true);
+}
+
+async function createVpc(config) {
+  let vpcId = await aws.createVpc();
+
+  let publicSubnetId1 = await aws.createSubnet(vpcId, config.masterZone + 'b', '10.0.1.0 / 20');
+  let privateSubnetId1 = await aws.createSubnet(vpcId, config.masterZone + 'b', '10.0.16.0 / 20');
+  let publicSubnetId2 = await aws.createSubnet(vpcId, config.masterZone + 'a', '10.0.128.0 / 20');
+  let privateSubnetId2 = await aws.createSubnet(vpcId, config.masterZone + 'a', '10.0.144.0 / 20');
+
+  let internetGatewayId = await aws.createInternetGateway();
+
+  await aws.attachInternetGateway(vpcId, internetGatewayId);
+
+  let publicRouteTableId = await aws.createRouteTable(vpcId);
+
+  await aws.createRoute(publicRouteTableId, { id: internetGatewayId, type: 'gateway-id'});
+
+  await aws.associateRouteTable(publicRouteTableId, publicSubnetId1);
+  await aws.associateRouteTable(publicRouteTableId, publicSubnetId2);
+
+  let privateRouteTableId1 = await aws.createRouteTable(vpcId);
+  let privateRouteTableId2 = await aws.createRouteTable(vpcId);
+
+  let allocationId = await aws.allocateAddress();
+
+  let NATId = await aws.createNATGateway(publicSubnetId1, allocationId);
+
+  await aws.waitForNAT(NATId);
+
+  await aws.createRoute(privateRouteTableId1, { id: NATId, type: 'nat-gateway-id' });
+  await aws.createRoute(privateRouteTableId2, { id: NATId, type: 'nat-gateway-id' });
+
+  await aws.associateRouteTable(privateRouteTableId1, privateSubnetId1);
+  await aws.associateRouteTable(privateRouteTableId2, privateSubnetId2);
+
+  return vpcId;
 }
 
 async function setLicenseSecret(config) {
