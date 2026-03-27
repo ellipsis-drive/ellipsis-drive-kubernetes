@@ -23,11 +23,13 @@ module.exports = {
 
   createVpc: async () => {
     let vpc = await cmd.executeCommandSimple(`aws ec2 create-vpc --cidr-block 10.0.0.0/16`);
+    vpc = JSON.parse(vpc);
     return vpc.Vpc.VpcId;
   },
 
   createSubnet: async (vpcId, availabilityZone, CIDR) => {
     let subnet = await cmd.executeCommandSimple(`aws ec2 create-subnet --vpc-id ${vpcId} --cidr-block ${CIDR} --availability-zone ${availabilityZone}`);
+    subnet = JSON.parse(subnet);
     return subnet.Subnet.SubnetId;
   },
 
@@ -41,6 +43,7 @@ module.exports = {
 
   createRouteTable: async (vpcId) => {
     let routeTable = await cmd.executeCommandSimple(`aws ec2 create-route-table --vpc-id ${vpcId}`);
+    routeTable = JSON.parse(routeTable);
     return routeTable.RouteTable.RouteTableId;
   },
 
@@ -54,11 +57,13 @@ module.exports = {
 
   allocateAddress: async () => {
     let allocation = await cmd.executeCommandSimple(`aws ec2 allocate-address --domain vpc`);
+    allocation = JSON.parse(allocation);
     return allocation.AllocationId;
   },
 
   createNATGateway: async (subnetId, allocationId) => {
     let natGateway = await cmd.executeCommandSimple(`aws ec2 create-nat-gateway --subnet-id ${subnetId} --allocation-id ${allocationId}`);
+    natGateway = JSON.parse(natGateway);
     return natGateway.NatGateway.NatGatewayId;
   },
 
