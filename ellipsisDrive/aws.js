@@ -34,7 +34,9 @@ module.exports = {
   },
 
   createInternetGateway: async () => {
-    await cmd.executeCommandSimple(`aws ec2 create-internet-gateway`);
+    let internetGateway = await cmd.executeCommandSimple(`aws ec2 create-internet-gateway`);
+    internetGateway = JSON.parse(internetGateway);
+    return internetGateway.InternetGateway.InternetGatewayId;
   },
 
   attachInternetGateway: async (vpcId, internetGatewayId) => {
