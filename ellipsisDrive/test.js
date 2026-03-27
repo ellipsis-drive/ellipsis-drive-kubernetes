@@ -3,7 +3,7 @@ const loadConfig = require('./loadConfig');
 
 test();
 
-async function test(config) {
+async function test() {
   let config = loadConfig();
   
   // await ellipsis.createCluster(config);
