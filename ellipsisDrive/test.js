@@ -6,5 +6,5 @@ test();
 async function test() {
   let config = loadConfig();
   
-  // await ellipsis.createCluster(config);
+  await ellipsis.createCluster(config);
 }
