@@ -22,11 +22,13 @@ module.exports = {
   },
 
   createVpc: async () => {
-    await cmd.executeCommandSimple(`aws ec2 create-vpc --cidr-block 10.0.0.0/16`);
+    let vpc = await cmd.executeCommandSimple(`aws ec2 create-vpc --cidr-block 10.0.0.0/16`);
+    return vpc.Vpc.VpcId;
   },
 
   createSubnet: async (vpcId, availabilityZone, CIDR) => {
-    await cmd.executeCommandSimple(`aws ec2 create-subnet --vpc-id ${vpcId} --cidr-block ${CIDR} --availability-zone ${availabilityZone}`);
+    let subnet = await cmd.executeCommandSimple(`aws ec2 create-subnet --vpc-id ${vpcId} --cidr-block ${CIDR} --availability-zone ${availabilityZone}`);
+    return subnet.Subnet.SubnetId;
   },
 
   createInternetGateway: async () => {
@@ -38,7 +40,8 @@ module.exports = {
   },
 
   createRouteTable: async (vpcId) => {
-    await cmd.executeCommandSimple(`aws ec2 create-route-table --vpc-id ${vpcId}`);
+    let routeTable = await cmd.executeCommandSimple(`aws ec2 create-route-table --vpc-id ${vpcId}`);
+    return routeTable.RouteTable.RouteTableId;
   },
 
   createRoute: async (routeTableId, destination) => {
@@ -50,11 +53,13 @@ module.exports = {
   },
 
   allocateAddress: async () => {
-    await cmd.executeCommandSimple(`aws ec2 allocate-address --domain vpc`);
+    let allocation = await cmd.executeCommandSimple(`aws ec2 allocate-address --domain vpc`);
+    return allocation.AllocationId;
   },
 
   createNATGateway: async (subnetId, allocationId) => {
-    await cmd.executeCommandSimple(`aws ec2 create-nat-gateway --subnet-id ${subnetId} --allocation-id ${allocationId}`);
+    let natGateway = await cmd.executeCommandSimple(`aws ec2 create-nat-gateway --subnet-id ${subnetId} --allocation-id ${allocationId}`);
+    return natGateway.NatGateway.NatGatewayId;
   },
 
   waitForNAT: async (NATId) => {
