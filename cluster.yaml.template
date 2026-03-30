@@ -5,14 +5,18 @@ metadata:
   name: <<<clusterName>>>
   region: eu-central-1
   version: "<<<kubernetesVersion>>>"
-  with-oidc: true
-  support-type: Standard
 
 vpc:
   subnets:
     private:
       eu-central-1b: { id: <<<subnetId1>>> }
       eu-central-1a: { id: <<<subnetId2>>> }
+
+upgradePolicy: 
+  supportType: STANDARD
+
+iam:
+  withOIDC: true
 
 autoModeConfig:
   enabled: true
