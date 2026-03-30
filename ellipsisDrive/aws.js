@@ -30,6 +30,8 @@ module.exports = {
   createBucket: async (name, region) => {
     let buckets = await cmd.executeCommandSimple(`aws s3api list-buckets`);
 
+    buckets = JSON.parse(buckets);
+
     if (!buckets.Buckets.find((x) => x.Name === name)) {
       await cmd.executeCommandSimple(`aws s3api create-bucket --bucket ${name} --region ${region} --create-bucket-configuration LocationConstraint=${region}`);
     }
