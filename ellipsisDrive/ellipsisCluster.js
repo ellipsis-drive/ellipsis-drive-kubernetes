@@ -195,12 +195,12 @@ async function applyVarious(config) {
 }
 
 async function createBuckets(config) {
-  await aws.createBucket(`ellipsis-${config.companyName}-raster-uploads-${config.masterZoneAbbreviation}}`, config.masterZone);
-  await aws.createBucket(`ellipsis-${config.companyName}-vector-uploads-${config.masterZoneAbbreviation}}`, config.masterZone);
-  await aws.createBucket(`ellipsis-${config.companyName}-point-cloud-uploads-${config.masterZoneAbbreviation}}`, config.masterZone);
-  await aws.createBucket(`ellipsis-${config.companyName}-files-${config.masterZoneAbbreviation}}`, config.masterZone);
-  await aws.createBucket(`ellipsis-${config.companyName}-message-images-${config.masterZoneAbbreviation}}`, config.masterZone);
-  await aws.createBucket(`ellipsis-${config.companyName}-cold-vector-data-${config.masterZoneAbbreviation}}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-raster-uploads-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-vector-uploads-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-point-cloud-uploads-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-files-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-message-images-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-cold-vector-data-${config.masterZoneAbbreviation}`, config.masterZone);
 }
 
 async function createOwl(config) {
