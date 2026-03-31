@@ -22,6 +22,7 @@ async function test() {
   // await ellipsis.applyStorage(config);
   // await ellipsis.applyVarious(config);
   // await ellipsis.setupEllipsisConfigmap(config);
-  await ellipsis.setupCloudnativepg(config);
+  // await ellipsis.setupCloudnativepg(config);
+  await ellipsis.setupIngress(config);
   console.log(vpc);
 }
