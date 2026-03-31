@@ -25,8 +25,8 @@ async function test() {
   // await ellipsis.setupCloudnativepg(config);
   // await ellipsis.setupIngress(config);
 
-  await ellipsis.createOwl(config);
-  // await ellipsis.createPigeon(config);
+  // await ellipsis.createOwl(config);
+  await ellipsis.createPigeon(config);
   // await ellipsis.createEmu(config);
   // await ellipsis.createAlbatross(config);
   // await ellipsis.createRooster(config);
