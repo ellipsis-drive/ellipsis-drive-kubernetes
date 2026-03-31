@@ -18,6 +18,7 @@ async function test() {
   // await ellipsis.setLicenseSecret(config);
   // await ellipsis.applyPolicies(config);
   // await ellipsis.createBuckets(config);
-  await ellipsis.applySecrets(config);
+  // await ellipsis.applySecrets(config);
+  await ellipsis.applyStorage(config);
   console.log(vpc);
 }
