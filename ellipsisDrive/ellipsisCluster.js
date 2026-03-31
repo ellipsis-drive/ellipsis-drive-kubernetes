@@ -180,14 +180,14 @@ async function applySecrets(config) {
 }
 
 async function applyStorage(config) {
-  await kubectl.apply('../storage/storage/ebs-sc.yaml');
-  await kubectl.apply('../storage/storage/efs-sc.yaml');
-  await kubectl.apply('../storage/storage/efs-finch-sc.yaml');
+  await kubectl.apply('../storage/ebs-sc.yaml');
+  await kubectl.apply('../storage/efs-sc.yaml');
+  await kubectl.apply('../storage/efs-finch-sc.yaml');
 
-  await kubectl.apply('../storage/storage/efs-pv.yaml');
+  await kubectl.apply('../storage/efs-pv.yaml');
 
-  await kubectl.apply('../storage/storage/finch-1-pvc.yaml');
-  await kubectl.apply('../storage/storage/etmpfs-pvc.yaml');
+  await kubectl.apply('../storage/finch-1-pvc.yaml');
+  await kubectl.apply('../storage/etmpfs-pvc.yaml');
 }
 
 async function applyVarious(config) {
