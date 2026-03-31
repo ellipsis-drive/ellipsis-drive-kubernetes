@@ -275,8 +275,8 @@ async function createPigeon(config) {
   await kubectl.apply('../pigeon/flask/flask-deployment.yaml');
   await kubectl.apply('../pigeon/flask/flask-service.yaml');
 
-  await kubectl.apply('../pigeon/api/cache-pdb.yaml');
-  await kubectl.apply('../pigeon/api/cache-queries-config-map.yaml');
+  await kubectl.apply('../pigeon/cache-db/cache-pdb.yaml');
+  await kubectl.apply('../pigeon/cache-db/cache-queries-config-map.yaml');
   await kubectl.apply('../pigeon/cache-db/cache-db-cloudnativepg.yaml');
   await kubectl.apply('../pigeon/cache-db/cache-db-deployment.yaml');
   await kubectl.apply('../pigeon/cache-db/cache-db-service.yaml');
