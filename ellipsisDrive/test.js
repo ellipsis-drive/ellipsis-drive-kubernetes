@@ -20,6 +20,7 @@ async function test() {
   // await ellipsis.createBuckets(config);
   // await ellipsis.applySecrets(config);
   // await ellipsis.applyStorage(config);
-  await ellipsis.applyVarious(config);
+  // await ellipsis.applyVarious(config);
+  await ellipsis.setupEllipsisConfigmap(config);
   console.log(vpc);
 }
