@@ -23,6 +23,14 @@ async function test() {
   // await ellipsis.applyVarious(config);
   // await ellipsis.setupEllipsisConfigmap(config);
   // await ellipsis.setupCloudnativepg(config);
-  await ellipsis.setupIngress(config);
+  // await ellipsis.setupIngress(config);
+
+  await ellipsis.createOwl(config);
+  // await ellipsis.createPigeon(config);
+  // await ellipsis.createEmu(config);
+  // await ellipsis.createAlbatross(config);
+  // await ellipsis.createRooster(config);
+  // await ellipsis.createPenguin(config);
+
   console.log(vpc);
 }
