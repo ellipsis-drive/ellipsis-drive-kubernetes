@@ -75,6 +75,12 @@ module.exports = {
     await cmd.executeCommandSimple(`aws ec2 modify-vpc-attribute --vpc-id ${vpcId} --enable-dns-hostnames`);
   },
 
+  addNfsSecurityGroup: async (vpcId) => {
+    let securityGroup = await cmd.executeCommandSimple(`aws ec2 create-security-group --vpc-id ${vpcId} --group-name efs-nfs-sg --description "Allow NFS traffic for EFS"`);
+    securityGroup = JSON.parse(securityGroup);
+    await cmd.executeCommandSimple(`aws ec2 authorize-security-group-egress --group-id ${securityGroup.GroupId} --protocol tcp --port 2049 --cidr 0.0.0.0/0`);
+  },
+
   createSubnet: async (vpcId, availabilityZone, CIDR, public) => {
     let subnet = await cmd.executeCommandSimple(`aws ec2 create-subnet --vpc-id ${vpcId} --cidr-block ${CIDR} --availability-zone ${availabilityZone} --tag-specifications ResourceType=subnet,Tags=[{Key=${public ? 'kubernetes.io/role/elb' : 'kubernetes.io/role/internal-elb'},Value=1}]`);
     subnet = JSON.parse(subnet);

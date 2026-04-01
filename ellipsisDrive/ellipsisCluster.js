@@ -110,6 +110,8 @@ async function createVpc(config) {
   await aws.associateRouteTable(privateRouteTableId1, privateSubnetId1);
   await aws.associateRouteTable(privateRouteTableId2, privateSubnetId2);
 
+  await aws.addNfsSecurityGroup(vpcId);
+
   return {
     vpcId: vpcId,
     publicSubnetId1: publicSubnetId1,
