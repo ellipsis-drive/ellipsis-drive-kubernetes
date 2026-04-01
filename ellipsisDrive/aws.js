@@ -60,6 +60,7 @@ module.exports = {
       }
       else {
         console.log('lifecyclestate', fileSystem.LifeCycleState);
+        await new Promise((x) => setTimeout(x, 500));
       }
     }
   },
