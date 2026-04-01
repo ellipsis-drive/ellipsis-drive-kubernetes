@@ -185,15 +185,15 @@ async function applyStorage(config, vpc) {
   await kubectl.apply('../storage/efs-sc.yaml');
   await kubectl.apply('../storage/efs-finch-sc.yaml');
 
-  await createEfsAndPersistentVolume(vpc, 'efs');
-  await createEfsAndPersistentVolume(vpc, 'efs-finch');
+  await createEfsAndPersistentVolume(vpc, 'efs', config.masterZone);
+  await createEfsAndPersistentVolume(vpc, 'efs-finch', config.masterZone);
 
   await kubectl.apply('../storage/finch-1-pvc.yaml');
   await kubectl.apply('../storage/etmpfs-pvc.yaml');
 }
 
-async function createEfsAndPersistentVolume( vpc, baseName) {
-  let efsId = await aws.createEfs();
+async function createEfsAndPersistentVolume(vpc, baseName, region) {
+  let efsId = await aws.createEfs(region);
   await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId1);
   await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId2);
 
