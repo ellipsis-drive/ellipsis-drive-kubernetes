@@ -33,6 +33,6 @@ module.exports = {
   },
 
   createConfigmap: async (name, dataSource) => {
-    await cmd.executeCommandSimple(`kubectl create configmap ${name} ${dataSource.type === 'file' ? `--from-file=${dataSource.fileName}` : ''}`);
+    await cmd.executeCommandSimple(`kubectl create configmap ${name} ${dataSource.type === 'file' ? `--from-env-file=${dataSource.fileName}` : ''}`);
   }
 }
