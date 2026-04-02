@@ -19,5 +19,9 @@ module.exports = {
 
   createBucket: async (name) => {
     await cmd.executeCommandSimple(`aws s3api create-bucket --bucket ${name} --region ${region}`);
+  },
+
+  setDefaultCluster: async (region, clusterName) => {
+    await cmd.executeCommandSimple(`aws eks update-kubeconfig --region ${region} --name ${clusterName}`);
   }
 }
