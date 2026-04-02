@@ -1,5 +1,7 @@
 const cmd = require('./cmd');
 
+const VPCCIDR = '10.0.0.0/16';
+
 module.exports = {
   createPolicy: async (name, documentPath) => {
     let policyInfo = await cmd.executeCommandSimple(`aws iam list-policies`);
@@ -45,8 +47,8 @@ module.exports = {
     return efs.FileSystemId;
   },
 
-  attachEfsToSubnet: async (fileSystemId, subnetId) => {
-    await cmd.executeCommandSimple(`aws efs create-mount-target --file-system-id ${fileSystemId} --subnet-id ${subnetId}`);
+  attachEfsToSubnet: async (fileSystemId, subnetId, securityGroupId) => {
+    await cmd.executeCommandSimple(`aws efs create-mount-target --file-system-id ${fileSystemId} --subnet-id ${subnetId} --security-groups ${securityGroupId}`);
   },
 
   waitForEfsAvailable: async (fileSystemId) => {
@@ -66,7 +68,7 @@ module.exports = {
   },
 
   createVpc: async () => {
-    let vpc = await cmd.executeCommandSimple(`aws ec2 create-vpc --cidr-block 10.0.0.0/16`);
+    let vpc = await cmd.executeCommandSimple(`aws ec2 create-vpc --cidr-block ${VPCCIDR}`);
     vpc = JSON.parse(vpc);
     return vpc.Vpc.VpcId;
   },
@@ -75,10 +77,15 @@ module.exports = {
     await cmd.executeCommandSimple(`aws ec2 modify-vpc-attribute --vpc-id ${vpcId} --enable-dns-hostnames`);
   },
 
-  addNfsSecurityGroup: async (vpcId) => {
+  addNfsSecurityGroup: async (vpcId, kubernetesClusterName) => {
     let securityGroup = await cmd.executeCommandSimple(`aws ec2 create-security-group --vpc-id ${vpcId} --group-name efs-nfs-sg --description "Allow NFS traffic for EFS"`);
     securityGroup = JSON.parse(securityGroup);
-    // await cmd.executeCommandSimple(`aws ec2 authorize-security-group-egress --group-id ${securityGroup.GroupId} --protocol tcp --port 2049 --cidr 0.0.0.0/0`);
+
+    // let cluster = await cmd.executeCommandSimple(`aws eks describe-cluster --name ${kubernetesClusterName}`);
+    // cluster = JSON.parse(cluster);
+
+    await cmd.executeCommandSimple(`aws ec2 authorize-security-group-ingress --group-id ${securityGroup.GroupId} --protocol tcp --port 2049 --cidr ${VPCCIDR}`);
+    return securityGroup.GroupId;
   },
 
   createSubnet: async (vpcId, availabilityZone, CIDR, public) => {

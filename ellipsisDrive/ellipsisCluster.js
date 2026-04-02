@@ -110,14 +110,15 @@ async function createVpc(config) {
   await aws.associateRouteTable(privateRouteTableId1, privateSubnetId1);
   await aws.associateRouteTable(privateRouteTableId2, privateSubnetId2);
 
-  await aws.addNfsSecurityGroup(vpcId);
+  let securityGroupId = await aws.addNfsSecurityGroup(vpcId, config.clusterName);
 
   return {
     vpcId: vpcId,
     publicSubnetId1: publicSubnetId1,
     privateSubnetId1: privateSubnetId1,
     publicSubnetId2: publicSubnetId2,
-    privateSubnetId2: privateSubnetId2
+    privateSubnetId2: privateSubnetId2,
+    securityGroupId: securityGroupId
   };
 }
 
@@ -199,8 +200,8 @@ async function applyStorage(config, vpc) {
 async function createEfsAndPersistentVolume(vpc, baseName, region) {
   let efsId = await aws.createEfs(region);
   await aws.waitForEfsAvailable(efsId);
-  await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId1);
-  await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId2);
+  await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId1, vpc.securityGroupId);
+  await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId2, vpc.securityGroupId);
 
   let clusterTemplate = utilities.loadFile('../storage/efs-pv.yaml');
 
