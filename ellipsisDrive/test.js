@@ -14,7 +14,7 @@ async function test() {
     publicSubnetId2: 'subnet-0b701969531d9c4a4',
     privateSubnetId2: 'subnet-0a4be94f055a021ea'
   }
-  // await ellipsis.createCluster(config, vpc);
+  await ellipsis.createCluster(config, vpc);
   // await ellipsis.setLicenseSecret(config);
   // await ellipsis.applyPolicies(config);
   // await ellipsis.createBuckets(config);
@@ -29,7 +29,7 @@ async function test() {
   // await ellipsis.createPigeon(config);
   // await ellipsis.createRooster(config);
   // await ellipsis.createEmu(config);
-  await ellipsis.createAlbatross(config);
+  // await ellipsis.createAlbatross(config);
   // await ellipsis.createPenguin(config);
 
   console.log(vpc);
