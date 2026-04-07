@@ -71,7 +71,7 @@ async function createCluster(config, vpc) {
 
   utilities.saveFile('../build/cluster.yaml', clusterTemplate);
 
-  eksctl.createCluster('../build/cluster.yaml', config['clusterName'], false);
+  await eksctl.createCluster('../build/cluster.yaml', config['clusterName'], false);
 }
 
 async function createVpc(config) {
