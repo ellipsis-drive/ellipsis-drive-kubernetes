@@ -270,7 +270,9 @@ async function setupEllipsisConfigmap(config) {
     'masterZone',
     'masterZoneAbbreviation',
     'frontendUrl',
-    'companyName'
+    'companyName',
+    'deploymentName',
+    'enablePlans'
   ];
 
   let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });

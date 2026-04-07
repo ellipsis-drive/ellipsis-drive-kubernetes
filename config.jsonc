@@ -29,5 +29,7 @@
   "frontendUrl": "kubernetes.ellipsis-drive.com",
   "masterZone": "eu-central-1",
   "masterZoneAbbreviation": "fra",
-  "companyName": "kubernetes"
+  "companyName": "kubernetes",
+  "deploymentName": "kubernetes-test",
+  "enablePlans": "true"
 }
