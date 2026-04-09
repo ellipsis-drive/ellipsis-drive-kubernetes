@@ -329,7 +329,6 @@ async function createRooster(config) {
   await kubectl.apply('../rooster/rooster-service.yaml');
   await kubectl.apply('../rooster/rooster.yaml');
 
-  await kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-deployment.yaml');
   await kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-service.yaml');
   await kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-stateful-set.yaml');
 }
