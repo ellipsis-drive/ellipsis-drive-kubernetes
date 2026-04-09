@@ -31,6 +31,7 @@ async function test() {
   // await ellipsis.createEmu(config);
   // await ellipsis.createAlbatross(config);
   // await ellipsis.createPenguin(config);
+  // await ellipsis.createClusterWorkers(config);
 
   console.log(vpc);
 }
