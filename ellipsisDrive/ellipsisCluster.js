@@ -203,9 +203,11 @@ async function createEfsAndPersistentVolume(vpc, baseName, region) {
   await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId1, vpc.securityGroupId);
   await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId2, vpc.securityGroupId);
 
+  let accessPointId = await aws.createEfsAccesspoint(efsId);
+
   let clusterTemplate = utilities.loadFile('../storage/efs-pv.yaml');
 
-  let substitutes = [{ key: 'storageClassName', value: baseName }, { key: 'efsId', value: efsId }];
+  let substitutes = [{ key: 'storageClassName', value: baseName }, { key: 'efsId', value: efsId }, { key: 'accessPointId', value: accessPointId }];
 
   clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
 
