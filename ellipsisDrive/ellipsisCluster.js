@@ -34,6 +34,7 @@ module.exports = {
     await createAlbatross(config);
     await createRooster(config);
     await createPenguin(config);
+    await createClusterWorkers(config);
   },
 
   createVpc: createVpc,
@@ -52,7 +53,8 @@ module.exports = {
   createPigeon: createPigeon,
   createRooster: createRooster,
   createPenguin: createPenguin,
-  createEmu: createEmu
+  createEmu: createEmu,
+  createClusterWorkers: createClusterWorkers
 }
 
 async function createCluster(config, vpc) {
@@ -203,9 +205,11 @@ async function createEfsAndPersistentVolume(vpc, baseName, region) {
   await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId1, vpc.securityGroupId);
   await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId2, vpc.securityGroupId);
 
+  let accessPointId = await aws.createEfsAccesspoint(efsId);
+
   let clusterTemplate = utilities.loadFile('../storage/efs-pv.yaml');
 
-  let substitutes = [{ key: 'storageClassName', value: baseName }, { key: 'efsId', value: efsId }];
+  let substitutes = [{ key: 'storageClassName', value: baseName }, { key: 'efsId', value: efsId }, { key: 'accessPointId', value: accessPointId }];
 
   clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
 
@@ -325,7 +329,6 @@ async function createRooster(config) {
   await kubectl.apply('../rooster/rooster-service.yaml');
   await kubectl.apply('../rooster/rooster.yaml');
 
-  await kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-deployment.yaml');
   await kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-service.yaml');
   await kubectl.apply('../rooster/compressedListFeatures/file-server-api-vector-stateful-set.yaml');
 }
@@ -367,4 +370,12 @@ async function createEmu(config) {
   await kubectl.apply('../emu/thumbnails/thumbnails-deployment.yaml');
   await kubectl.apply('../emu/userDeletionManagement/user-deletion-management-deployment.yaml');
   await kubectl.apply('../emu/userHistoryAppender/user-history-appender-deployment.yaml');
+}
+
+async function createClusterWorkers(config) {
+  await kubectl.apply('../dodo/vector-worker.yaml');
+  await kubectl.apply('../hawk/raster-worker.yaml');
+  await kubectl.apply('../heron/point-cloud-worker.yaml');
+  await kubectl.apply('../hummingbird/export-worker.yaml');
+  await kubectl.apply('../sparrow/import-worker.yaml');
 }

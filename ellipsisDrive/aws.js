@@ -51,6 +51,12 @@ module.exports = {
     await cmd.executeCommandSimple(`aws efs create-mount-target --file-system-id ${fileSystemId} --subnet-id ${subnetId} --security-groups ${securityGroupId}`);
   },
 
+  createEfsAccesspoint: async (fileSystemId) => {
+    let accessPoint = await cmd.executeCommandSimple(`aws efs create-access-point --file-system-id ${fileSystemId} --posix-user Uid=1623,Gid=1623 --root-directory "Path=/data,CreationInfo={OwnerUid=1623,OwnerGid=1623,Permissions=0755}"`);
+    accessPoint = JSON.parse(accessPoint);
+    return accessPoint.AccessPointId;
+  },
+
   waitForEfsAvailable: async (fileSystemId) => {
     while (true) {
       let fileSystems = await cmd.executeCommandSimple(`aws efs describe-file-systems`);
