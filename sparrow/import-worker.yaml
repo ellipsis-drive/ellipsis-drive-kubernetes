@@ -41,6 +41,11 @@ spec:
               secretKeyRef:
                 name: internal-mail
                 key: password
+          - name: SECRET
+            valueFrom:
+              secretKeyRef:
+                name: secret
+                key: secret
         envFrom:
           - configMapRef:
               name: ellipsis
