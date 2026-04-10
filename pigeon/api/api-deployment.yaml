@@ -97,6 +97,16 @@ spec:
               secretKeyRef:
                 name: ellipsis-internal-key
                 key: vector
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
         volumeMounts:
           - name: etmpfs
             mountPath: /mnt/etmpfs
