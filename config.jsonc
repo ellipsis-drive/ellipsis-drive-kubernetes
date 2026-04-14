@@ -25,11 +25,11 @@
   "googleClientId": "foobar",
   "googleClientSecret": "foobar",
 
-  "apiUrl": "https://kubernetes.api.ellipsis-drive.com",
-  "frontendUrl": "https://kubernetes.ellipsis-drive.com",
+  "apiUrl": "kubernetes.api.ellipsis-drive.com", // should be the base without http/www
+  "frontendUrl": "kubernetes.ellipsis-drive.com", // should be the base without http/www
   "masterZone": "eu-central-1",
   "masterZoneAbbreviation": "fra",
   "companyName": "kubernetes",
   "deploymentName": "kubernetes-test",
-  "enablePlans": "true"
+  "enablePlans": "false"
 }
