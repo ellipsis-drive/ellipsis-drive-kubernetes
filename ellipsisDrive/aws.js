@@ -150,7 +150,7 @@ module.exports = {
   },
 
   releaseAddress: async (id) => {
-    await cmd.executeCommandSimple(`aws ec2 release-address ----allocation-id ${id}`);
+    await cmd.executeCommandSimple(`aws ec2 release-address --allocation-id ${id}`);
   },
 
   createNATGateway: async (subnetId, allocationId) => {
