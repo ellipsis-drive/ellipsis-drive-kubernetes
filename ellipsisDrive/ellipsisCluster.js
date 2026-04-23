@@ -157,7 +157,7 @@ async function deleteCluster(config) {
   let history;
   try {
     history = utilities.loadFile(utilities.historyPath);
-    history = history.split('/n').filter((x) => x).reverse();
+    history = history.split('\n').filter((x) => x).reverse();
   }
   catch (e) {
     console.error(e);
