@@ -12,6 +12,8 @@ module.exports = {
       return;
     }
 
+    fs.closeSync(fs.openSync(utilities.historyPath, 'w'));
+
     let vpc = await createVpc(config);
 
     await createCluster(config, vpc)
@@ -158,9 +160,14 @@ async function deleteCluster(config) {
   catch (e) {
     console.error(e);
 
-    console.log('Could not load history, assuming there is nothing to delete');
+    if (e.message.includes('ENOENT')) {
+      console.log('Could not load history, assuming there is nothing to delete');
 
-    history = [];
+      history = [];
+    }
+    else {
+      throw('Could not load the history file');
+    }
   }
 
   for (let i = 0; i < history.length; i++) {
