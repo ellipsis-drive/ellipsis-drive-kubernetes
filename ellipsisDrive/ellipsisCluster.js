@@ -149,7 +149,7 @@ function validateConfig(config) {
   }
 }
 
-function deleteCluster(config) {
+async function deleteCluster(config) {
   let history;
   try {
     history = utilities.loadFile(utilities.historyPath);
