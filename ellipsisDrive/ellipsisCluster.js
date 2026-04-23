@@ -218,6 +218,10 @@ async function deleteCluster(config) {
           await aws.deleteInternetGateway(id);
           break;
         }
+        case 'attachInternetGateway': {
+          await aws.deattachInternetGateway(id, createEvent.vpcId);
+          break;
+        }
         case 'subnet': {
           await aws.deleteSubnet(id);
           break;

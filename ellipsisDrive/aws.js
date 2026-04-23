@@ -131,12 +131,16 @@ module.exports = {
   },
 
   deleteInternetGateway: async (id) => {
-    await cmd.executeCommandSimple(`aws ec2 detach-internet-gateway --internet-gateway-id ${id}`);
     await cmd.executeCommandSimple(`aws ec2 delete-internet-gateway --internet-gateway-id ${id}`);
   },
 
   attachInternetGateway: async (vpcId, internetGatewayId) => {
     await cmd.executeCommandSimple(`aws ec2 attach-internet-gateway --vpc-id ${vpcId} --internet-gateway-id ${internetGatewayId}`);
+    utilities.addToHistoryFile({ type: 'attachInternetGateway', id: internetGatewayId, vpcId: vpcId });
+  },
+
+  deleteInternetGateway: async (id, vpcId) => {
+    await cmd.executeCommandSimple(`aws ec2 detach-internet-gateway --internet-gateway-id ${id} --vpc-ip ${vpcId}`);
   },
 
   createRouteTable: async (vpcId) => {
