@@ -172,6 +172,8 @@ async function deleteCluster(config) {
     }
   }
 
+  console.log(JSON.stringify(history));
+
   for (let i = 0; i < history.length; i++) {
     let createEvent = JSON.parse(history[i]);
 
