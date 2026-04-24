@@ -493,7 +493,7 @@ async function setupCloudnativepg(config) {
 }
 
 async function setupEllipsisConfigmap(config) {
-  let clusterTemplate = utilities.loadFile('./ellipsis.env');
+  let clusterTemplate = utilities.loadFile('./ellipsisDrive/ellipsis.env');
 
   let keys = [
     'apiUrl',
