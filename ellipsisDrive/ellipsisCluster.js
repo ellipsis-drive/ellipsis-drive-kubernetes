@@ -191,6 +191,10 @@ async function deleteCluster(config) {
             await aws.deleteEfs(id, config.masterZone);
             break;
           }
+          case 'attachMountTarget': {
+            await aws.deattachEfsToSubnet(id, config.masterZone);
+            break;
+          }
           case 'certificate': {
             await aws.deleteCertificate(id);
             break;

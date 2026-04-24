@@ -61,7 +61,13 @@ module.exports = {
   },
 
   attachEfsToSubnet: async (fileSystemId, subnetId, securityGroupId) => {
-    await cmd.executeCommandSimple(`aws efs create-mount-target --file-system-id ${fileSystemId} --subnet-id ${subnetId} --security-groups ${securityGroupId}`);
+    let mountTarget = await cmd.executeCommandSimple(`aws efs create-mount-target --file-system-id ${fileSystemId} --subnet-id ${subnetId} --security-groups ${securityGroupId}`);
+    mountTarget = JSON.parse(mountTarget);
+    utilities.addToHistoryFile({ type: 'attachMountTarget', id: mountTarget.MountTargetId });
+  },
+
+  deattachEfsToSubnet: async (id, region) => {
+    await cmd.executeCommandSimple(`aws efs delete-mount-target --mount-target-id ${id} --region ${region}`);
   },
 
   createEfsAccesspoint: async (fileSystemId) => {
