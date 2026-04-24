@@ -62,7 +62,7 @@ module.exports = {
     let clusters = await cmd.executeCommandSimple(`kubectl get cluster -o json`);
 
     cluster = JSON.parse(clusters);
-    console.log('items', clusters)
+    console.log('items', clusters.apiVersion)
     for (let i = 0; i < clusters.items.length; i++) {
       let item = clusters.items[i];
 
