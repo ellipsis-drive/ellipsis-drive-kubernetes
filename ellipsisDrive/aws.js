@@ -49,6 +49,7 @@ module.exports = {
   },
 
   deleteBucket: async (name, region) => {
+    await cmd.executeCommandSimple(`aws s3 rm s3://${name} --recursive`);
     await cmd.executeCommandSimple(`aws s3api delete-bucket --bucket ${name} --region ${region}`);
   },
 
