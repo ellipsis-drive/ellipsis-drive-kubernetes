@@ -84,7 +84,7 @@ module.exports = {
     pvcs = JSON.parse(pvcs);
 
     for (let i = 0; i < pvcs.items.filter((x) => x.spec.storageClassName === 'ebs-sc').length; i++) {
-      let item = statefulset.items.filter((x) => x.spec.storageClassName === 'ebs-sc')[i];
+      let item = pvcs.items.filter((x) => x.spec.storageClassName === 'ebs-sc')[i];
 
       await cmd.executeCommandSimple(`kubectl delete pvc ${item.metadata.name}`);
     }
