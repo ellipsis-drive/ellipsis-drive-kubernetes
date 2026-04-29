@@ -277,6 +277,7 @@ async function createCluster(config, vpc) {
 
   let keys = [
     'clusterName',
+    'masterZone',
     'kubernetesVersion'
   ];
 
