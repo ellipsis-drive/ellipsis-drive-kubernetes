@@ -2,7 +2,7 @@ const fs = require('fs');
 const getDirName = require('path').dirname;
 const crypto = require('crypto');
 
-const HISTORY_PATH = './ellipsisDrive/history.json';
+const HISTORY_PATH = './build/history';
 
 module.exports = {
   historyPath: HISTORY_PATH,
