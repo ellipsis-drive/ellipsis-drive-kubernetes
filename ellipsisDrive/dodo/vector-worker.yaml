@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vector-worker
+  labels:
+    ellipsis-drive: vector-worker
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      ellipsis-drive: vector-worker
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: vector-worker
+    spec:
+      serviceAccountName: s3-access-sa
+      containers:
+      - name: vector-worker
+        image: ghcr.io/ellipsis-drive/vector-worker:latest
+        resources:
+          requests:
+            cpu: 2
+        env:
+          - name: POSTGRES_APP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: owl-db-password
+                key: password
+          - name: POSTGRES_APP_PASS_SHAPE
+            valueFrom:
+              secretKeyRef:
+                name: rooster-db-password
+                key: password
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
+          - name: ELLIPSIS_INTERNAL_KEY_VECTOR
+            valueFrom:
+              secretKeyRef:
+                name: ellipsis-internal-key
+                key: vector
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+        volumeMounts:
+          - name: etmpfs
+            mountPath: /mnt/etmpfs
+          - name: tmpfs
+            mountPath: /mnt/tmpfs  
+      imagePullSecrets:
+        - name: ghcr-secret
+      volumes:
+        - name: etmpfs
+          persistentVolumeClaim:
+            claimName: etmpfs
+        - name: tmpfs
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi

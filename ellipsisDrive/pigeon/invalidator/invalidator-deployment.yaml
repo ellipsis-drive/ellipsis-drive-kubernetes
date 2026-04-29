@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: invalidator
+  labels:
+    ellipsis-drive: invaldiator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: invalidator
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: invalidator
+    spec:
+      containers:
+      - name: invalidator
+        image: ghcr.io/ellipsis-drive/invalidator:latest
+        resources:
+          requests:
+            cpu: 100m
+        env:
+          - name: POSTGRES_APP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: owl-db-password
+                key: password
+          - name: POSTGRES_APP_PASS_LOCAL
+            valueFrom:
+              secretKeyRef:
+                name: pigeon-db-password
+                key: password
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+      imagePullSecrets:
+        - name: ghcr-secret

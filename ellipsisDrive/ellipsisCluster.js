@@ -1,22 +1,617 @@
+const fs = require('fs');
+
 const utilities = require('./utilities');
 const kubectl = require('./kubectl');
+const aws = require('./aws');
 const eksctl = require('./eksctl');
+const { parse: jsoncParse, modify, applyEdits } = require('jsonc-parser');
 
 module.exports = {
-  create: (config) => {
-    let clusterTemplate = utilities.loadFile('../cluster.yaml.template');
+  create: async (config) => {
+    let configOk = validateConfig(config);
 
-    let keys = [
-      'clusterName',
-      'kubernetesVersion'
+    if (!configOk) {
+      return;
+    }
+
+    fs.closeSync(fs.openSync(utilities.historyPath, 'w'));
+
+    let vpc = await createVpc(config);
+
+    await createCluster(config, vpc)
+
+    await setLicenseSecret(config);
+
+    await applyPolicies(config);
+
+    await createBuckets(config);
+
+    await applySecrets(config);
+
+    await applyStorage(config, vpc);
+
+    await applyVarious(config);
+
+    await setupEllipsisConfigmap(config);
+
+    await setupCloudnativepg(config);
+
+    await setupIngress(config);
+
+    await createOwl(config);
+    await createPigeon(config);
+    await createEmu(config);
+    await createAlbatross(config);
+    await createRooster(config);
+    await createPenguin(config);
+    await createClusterWorkers(config);
+  },
+
+  configure: async () => {
+    const length = 64;
+    const keys = [
+      'loginSecret',
+      'oauthSecret',
+      'mainDbPassword',
+      'vectorDbPassword',
+      'cacheDbPassword',
+      'internalCallKey'
     ];
+
+    let configText = utilities.loadFile('./config.jsonc');
+
+    let edits = [];
     
-    let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
 
-    clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+      edits.push(...modify(configText, [key], utilities.generatePassword(length), {}));
+    }
+    
+    configText = applyEdits(configText, edits);
+    
+    utilities.saveFile('./config.jsonc', configText);
+  },
 
-    utilities.saveFile('../build/cluster.yaml', clusterTemplate);
+  validateConfig: validateConfig,
+  deleteCluster: deleteCluster,
 
-    eksctl.createCluster('../build/cluster.yaml', true);
+  createVpc: createVpc,
+  createCluster: createCluster,
+  setLicenseSecret: setLicenseSecret,
+  applyPolicies: applyPolicies,
+  applySecrets: applySecrets,
+  applyStorage: applyStorage,
+  applyVarious: applyVarious,
+  createBuckets: createBuckets,
+  createOwl: createOwl,
+  createAlbatross: createAlbatross,
+  setupIngress: setupIngress,
+  setupCloudnativepg: setupCloudnativepg,
+  setupEllipsisConfigmap: setupEllipsisConfigmap,
+  createPigeon: createPigeon,
+  createRooster: createRooster,
+  createPenguin: createPenguin,
+  createEmu: createEmu,
+  createClusterWorkers: createClusterWorkers
+}
+
+function validateConfig(config) {
+  const optionalKeys = [
+    'googleClientId',
+    'googleClientSecret'
+  ];
+
+  const limitedStringKeys = [
+    'clusterName',
+    'companyName',
+    'deploymentName',
+    'masterZoneAbbreviation'
+  ];
+
+  let templateConfig = utilities.loadFile('./ellipsisDrive/config-template.jsonc');
+  templateConfig = jsoncParse(templateConfig);
+
+  let keys = Object.keys(templateConfig);
+
+  let errors = false;
+
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+
+    let value = config[key];
+
+    if ((!value || value === "") && !optionalKeys.includes(key)) {
+      errors = true;
+      console.log(`Missing or empty value for '${key}'`);
+    }
+
+    let isString = typeof value === 'string' || value instanceof String;
+
+    if (!isString) {
+      errors = true;
+      console.log(`'${key}' must be of type string`);
+    }
+
+    if (limitedStringKeys.includes(key)) {
+      let isOk = /^[a-z0-9-]+$/.test(value);
+
+      if (!isOk) {
+        errors = true;
+        console.log(`'${key}' may only contain a-z, 0-9 and hyphens`);
+      }
+    }
   }
+
+  if (errors) {
+    console.log(`Errors found with the current config. Please fix these issues before proceeding`);
+    return false;
+  }
+  else {
+    console.log('Config is OK');
+    return true;
+  }
+}
+
+async function deleteCluster(config) {
+  await kubectl.deleteVolumes();
+
+  let history;
+  try {
+    history = utilities.loadFile(utilities.historyPath);
+    history = history.split('\n').filter((x) => x).reverse();
+  }
+  catch (e) {
+    console.error(e);
+
+    if (e.message.includes('ENOENT')) {
+      console.log('Could not load history, assuming there is nothing to delete');
+
+      history = [];
+    }
+    else {
+      throw('Could not load the history file');
+    }
+  }
+
+  console.log(JSON.stringify(history));
+
+  while (true) {
+    let nextHistory = [];
+
+    for (let i = 0; i < history.length; i++) {
+      let createEvent = JSON.parse(history[i]);
+
+      console.log('entry', createEvent);
+
+      let type = createEvent.type;
+      let id = createEvent.id;
+
+      try {
+        switch (type) {
+          case 'efs': {
+            await aws.deleteEfs(id, config.masterZone);
+            break;
+          }
+          case 'bucket': {
+            await aws.deleteBucket(id, config.masterZone);
+            break;
+          }
+          case 'attachMountTarget': {
+            await aws.deattachEfsToSubnet(id, config.masterZone);
+            break;
+          }
+          case 'certificate': {
+            await aws.deleteCertificate(id);
+            break;
+          }
+          // case 'cloudformationStack': {
+          //   await aws.deleteCloudformationStack(id);
+          //   break;
+          // }
+          case 'ip': {
+            await aws.releaseAddress(id);
+            break;
+          }
+          case 'NAT': {
+            await aws.deleteNATGateway(id);
+            break;
+          }
+          case 'vpc': {
+            await aws.deleteVpc(id);
+            break;
+          }
+          case 'routeTable': {
+            await aws.deleteRouteTable(id);
+            break;
+          }
+          case 'securityGroup': {
+            await aws.deleteSecurityGroup(id);
+            break;
+          }
+          case 'internetGateway': {
+            await aws.deleteInternetGateway(id);
+            break;
+          }
+          case 'attachInternetGateway': {
+            await aws.deattachInternetGateway(id, createEvent.vpcId);
+            break;
+          }
+          case 'subnet': {
+            await aws.deleteSubnet(id);
+            break;
+          }
+          case 'eks': {
+            await eksctl.deleteCluster(config.clusterName, config.masterZone);
+            break;
+          }
+          default:
+            throw('invalid type in the history of delete cluster', type);
+            break;
+        }
+      }
+      catch (e) {
+        if (e.message.includes('does not exist') || e.message.includes('https response error StatusCode: 404') || e.message.includes('Could not find')) {
+          console.log('Already deleted, skipping this one');
+        }
+        else {
+          nextHistory.push(history[i]);
+        }
+      }
+    }
+
+    if (nextHistory.length === 0) {
+      break;
+    }
+    else {
+      history = nextHistory;
+      await new Promise((x) => setTimeout(x, 500));
+    }
+  }
+
+  console.log('finished deleting the resources');
+}
+
+async function createCluster(config, vpc) {
+  let clusterTemplate = utilities.loadFile('./ellipsisDrive/cluster.yaml.template');
+
+  let keys = [
+    'clusterName',
+    'kubernetesVersion'
+  ];
+
+  let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+
+  substitutes.push({ key: 'subnetId1', value: vpc.privateSubnetId1 }, { key: 'subnetId2', value: vpc.privateSubnetId2 });
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('./build/cluster.yaml', clusterTemplate);
+
+  await eksctl.createCluster('./build/cluster.yaml', config['clusterName'], false);
+}
+
+async function createVpc(config) {
+  let vpcId = await aws.createVpc();
+
+  await aws.enabledDnsHostnames(vpcId);
+
+  let publicSubnetId1 = await aws.createSubnet(vpcId, config.masterZone + 'b', '10.0.1.0/20', true);
+  let privateSubnetId1 = await aws.createSubnet(vpcId, config.masterZone + 'b', '10.0.16.0/20', false);
+  let publicSubnetId2 = await aws.createSubnet(vpcId, config.masterZone + 'a', '10.0.128.0/20', true);
+  let privateSubnetId2 = await aws.createSubnet(vpcId, config.masterZone + 'a', '10.0.144.0/20', false);
+
+  let internetGatewayId = await aws.createInternetGateway();
+
+  await aws.attachInternetGateway(vpcId, internetGatewayId);
+
+  let publicRouteTableId = await aws.createRouteTable(vpcId);
+
+  await aws.createRoute(publicRouteTableId, { id: internetGatewayId, type: 'gateway-id'});
+
+  await aws.associateRouteTable(publicRouteTableId, publicSubnetId1);
+  await aws.associateRouteTable(publicRouteTableId, publicSubnetId2);
+
+  let privateRouteTableId1 = await aws.createRouteTable(vpcId);
+  let privateRouteTableId2 = await aws.createRouteTable(vpcId);
+
+  let allocationId = await aws.allocateAddress();
+
+  let NATId = await aws.createNATGateway(publicSubnetId1, allocationId);
+
+  await aws.waitForNAT(NATId);
+
+  await aws.createRoute(privateRouteTableId1, { id: NATId, type: 'nat-gateway-id' });
+  await aws.createRoute(privateRouteTableId2, { id: NATId, type: 'nat-gateway-id' });
+
+  await aws.associateRouteTable(privateRouteTableId1, privateSubnetId1);
+  await aws.associateRouteTable(privateRouteTableId2, privateSubnetId2);
+
+  let securityGroupId = await aws.addNfsSecurityGroup(vpcId, config.clusterName);
+
+  return {
+    vpcId: vpcId,
+    publicSubnetId1: publicSubnetId1,
+    privateSubnetId1: privateSubnetId1,
+    publicSubnetId2: publicSubnetId2,
+    privateSubnetId2: privateSubnetId2,
+    securityGroupId: securityGroupId
+  };
+}
+
+async function setLicenseSecret(config) {
+  await kubectl.setGitSecret(config.licenseKey);
+}
+
+async function applyPolicies(config) {
+  let policyInfo = await aws.createPolicy('EKS-S3-Access', './ellipsisDrive/s3-access-policy.json');
+    
+  let arn = policyInfo.Policy.Arn;
+
+  await eksctl.createServiceAccount('s3-access-sa', config.clusterName, arn);
+}
+
+async function applySecrets(config) {
+  await kubectl.createSecret('secret', [
+    { key: 'secret', value: config.loginSecret }
+  ]);
+
+  await kubectl.createSecret('oauth-secret', [
+    { key: 'secret', value: config.oauthSecret }
+  ]);
+
+  await kubectl.createSecret('owl-db-password', [
+    { key: 'username', value: 'ellipsis_app' },
+    { key: 'password', value: config.mainDbPassword }
+  ]);
+
+  await kubectl.createSecret('rooster-db-password', [
+    { key: 'username', value: 'ellipsis_app' },
+    { key: 'password', value: config.vectorDbPassword }
+  ]);
+
+  await kubectl.createSecret('pigeon-db-password', [
+    { key: 'username', value: 'local_api' },
+    { key: 'password', value: config.cacheDbPassword }
+  ]);
+
+  await kubectl.createSecret('ellipsis-internal-key', [
+    { key: 'get-cache', value: config.internalCallKey },
+    { key: 'point-cloud', value: config.internalCallKey },
+    { key: 'process', value: config.internalCallKey },
+    { key: 'raster', value: config.internalCallKey },
+    { key: 'redirect', value: config.internalCallKey },
+    { key: 'sanity-vector', value: config.internalCallKey },
+    { key: 'vector', value: config.internalCallKey }
+  ]);
+
+  await kubectl.createSecret('internal-mail', [
+    { key: 'username', value: config.internalMailUsername },
+    { key: 'password', value: config.internalMailPassword }
+  ]);
+
+  await kubectl.createSecret('noreply-mail', [
+    { key: 'username', value: config.noReplyMailUsername },
+    { key: 'password', value: config.noReplyMailPassword }
+  ]);
+
+  await kubectl.createSecret('google-client', [
+    { key: 'id', value: config.googleClientId },
+    { key: 'secret', value: config.googleClientSecret }
+  ]);
+}
+
+async function applyStorage(config, vpc) {
+  await kubectl.apply('./ellipsisDrive/storage/ebs-sc.yaml');
+
+  await kubectl.apply('./ellipsisDrive/storage/efs-sc.yaml');
+  await kubectl.apply('./ellipsisDrive/storage/efs-finch-sc.yaml');
+
+  await createEfsAndPersistentVolume(vpc, 'efs', config.masterZone);
+  await createEfsAndPersistentVolume(vpc, 'efs-finch', config.masterZone);
+
+  await kubectl.apply('./ellipsisDrive/storage/finch-1-pvc.yaml');
+  await kubectl.apply('./ellipsisDrive/storage/etmpfs-pvc.yaml');
+
+  let attempts = 0;
+  let success = false;
+
+  while (attempts < 5) {
+    await kubectl.apply('./ellipsisDrive/storage/init-folders.yaml');
+
+    success = await kubectl.waitForTermination('init-folders');
+
+    await kubectl.deletePod('init-folders');
+
+    if (success) {
+      break;
+    }
+    
+    attempts++;
+  }
+
+  if (!success) {
+    throw new Error('Failed to init folders');
+  }
+}
+
+async function createEfsAndPersistentVolume(vpc, baseName, region) {
+  let efsId = await aws.createEfs(region);
+  await aws.waitForEfsAvailable(efsId);
+  await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId1, vpc.securityGroupId);
+  await aws.attachEfsToSubnet(efsId, vpc.privateSubnetId2, vpc.securityGroupId);
+
+  let accessPointId = await aws.createEfsAccesspoint(efsId);
+
+  let clusterTemplate = utilities.loadFile('./ellipsisDrive/storage/efs-pv.yaml');
+
+  let substitutes = [{ key: 'storageClassName', value: baseName }, { key: 'efsId', value: efsId }, { key: 'accessPointId', value: accessPointId }];
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile(`./build/${baseName}-pv.yaml`, clusterTemplate);
+
+  await kubectl.apply(`./build/${baseName}-pv.yaml`);
+}
+
+async function applyVarious(config) {
+  await kubectl.createPriorityClass('high-priority', 1000000);
+}
+
+async function createBuckets(config) {
+  await aws.createBucket(`ellipsis-${config.companyName}-raster-uploads-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-vector-uploads-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-point-cloud-uploads-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-files-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-message-images-${config.masterZoneAbbreviation}`, config.masterZone);
+  await aws.createBucket(`ellipsis-${config.companyName}-cold-vector-data-${config.masterZoneAbbreviation}`, config.masterZone);
+}
+
+async function createOwl(config) {
+  let clusterTemplate = utilities.loadFile('./ellipsisDrive/owl/owl-data-config-map.yaml');
+
+  let substitutes = [{ key: 'masterZone', value: config['masterZone'] }, { key: 'apiUrl', value: config['apiUrl'] }]; 
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('./build/owl-data-config-map.yaml', clusterTemplate);
+
+  await kubectl.apply('./ellipsisDrive/owl/owl-pdb.yaml');
+  await kubectl.create('./ellipsisDrive/owl/owl-queries-config-map.yaml');
+  await kubectl.create('./build/owl-data-config-map.yaml');
+  await kubectl.create('./ellipsisDrive/owl/icons-queries-config-map.yaml');
+  await kubectl.apply('./ellipsisDrive/owl/owl.yaml');
+}
+
+async function createAlbatross(config) {
+  await kubectl.apply('./ellipsisDrive/albatross/cluster-master-service-account.yaml');
+  await kubectl.apply('./ellipsisDrive/albatross/rasterMaster/raster-master.yaml');
+  await kubectl.apply('./ellipsisDrive/albatross/vectorMaster/vector-master.yaml');
+  await kubectl.apply('./ellipsisDrive/albatross/pointCloudMaster/point-cloud-master.yaml');
+  await kubectl.apply('./ellipsisDrive/albatross/exportMaster/export-master.yaml');
+  await kubectl.apply('./ellipsisDrive/albatross/importMaster/import-master.yaml');
+}
+
+async function setupIngress(config) {
+  await kubectl.apply('./ellipsisDrive/ingress/ingress-class.yaml');
+}
+
+async function setupCloudnativepg(config) {
+  await kubectl.apply('https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.28/releases/cnpg-1.28.1.yaml', true);
+
+  await kubectl.waitForCloudnativePG();
+}
+
+async function setupEllipsisConfigmap(config) {
+  let clusterTemplate = utilities.loadFile('./ellipsisDrive/ellipsis.env');
+
+  let keys = [
+    'apiUrl',
+    'masterZone',
+    'masterZoneAbbreviation',
+    'frontendUrl',
+    'companyName',
+    'deploymentName',
+    'enablePlans'
+  ];
+
+  let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('./build/ellipsis.env', clusterTemplate);
+
+  await kubectl.createConfigmap('ellipsis', { type: 'file', fileName: './build/ellipsis.env' });
+}
+
+async function createPigeon(config) {
+  let certificateArn = await aws.createCertificate(config.apiUrl);
+
+  let clusterTemplate = utilities.loadFile('./ellipsisDrive/pigeon/api/api-ingress.yaml');
+
+  let keys = [
+    'apiUrl'
+  ];
+
+  let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+
+  substitutes.push({ key: 'apiCertificate', value: certificateArn });
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('./build/api-ingress.yaml', clusterTemplate);
+
+  await kubectl.apply('./ellipsisDrive/pigeon/api/api-pdb.yaml');
+  await kubectl.apply('./ellipsisDrive/pigeon/api/api-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/pigeon/api/api-service.yaml');
+  await kubectl.apply('./build/api-ingress.yaml');
+
+  await kubectl.apply('./ellipsisDrive/pigeon/actionsWriter/actions-writer-deployment.yaml');
+
+  await kubectl.apply('./ellipsisDrive/pigeon/invalidator/invalidator-deployment.yaml');
+
+  await kubectl.apply('./ellipsisDrive/pigeon/flask/flask-pdb.yaml');
+  await kubectl.apply('./ellipsisDrive/pigeon/flask/flask-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/pigeon/flask/flask-service.yaml');
+
+  await kubectl.apply('./ellipsisDrive/pigeon/cache-db/cache-db-pdb.yaml');
+  await kubectl.apply('./ellipsisDrive/pigeon/cache-db/cache-queries-config-map.yaml');
+  await kubectl.apply('./ellipsisDrive/pigeon/cache-db/cache-db-cloudnativepg.yaml');
+}
+
+async function createRooster(config) {
+  await kubectl.apply('./ellipsisDrive/rooster/rooster-pdb.yaml');
+  await kubectl.apply('./ellipsisDrive/rooster/rooster-queries-config-map.yaml');
+  await kubectl.apply('./ellipsisDrive/rooster/rooster-service.yaml');
+  await kubectl.apply('./ellipsisDrive/rooster/rooster.yaml');
+
+  await kubectl.apply('./ellipsisDrive/rooster/compressedListFeatures/file-server-api-vector-service.yaml');
+  await kubectl.apply('./ellipsisDrive/rooster/compressedListFeatures/file-server-api-vector-stateful-set.yaml');
+}
+
+async function createPenguin(config) {
+  let certificateArn = await aws.createCertificate(config.frontendUrl);
+
+  let clusterTemplate = utilities.loadFile('./ellipsisDrive/penguin/penguin-ingress.yaml');
+
+  let keys = [
+    'frontendUrl'
+  ];
+
+  let substitutes = keys.map((x) => { return { key: x, value: config[x] }; });
+
+  substitutes.push({ key: 'frontendCertificate', value: certificateArn });
+
+  clusterTemplate = utilities.substituteMulti(clusterTemplate, substitutes);
+
+  utilities.saveFile('./build/penguin-ingress.yaml', clusterTemplate);
+
+  await kubectl.apply('./build/penguin-ingress.yaml');
+  await kubectl.apply('./ellipsisDrive/penguin/penguin-service.yaml');
+  await kubectl.apply('./ellipsisDrive/penguin/penguin.yaml');
+}
+
+async function createEmu(config) {
+  await kubectl.apply('./ellipsisDrive/emu/bucketManagement/bucket-management-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/createPointCloudBounds/create-point-cloud-bounds-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/createRasterBounds/create-raster-bounds-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/createShapeBounds/create-shape-bounds-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/emailSender/email-sender-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/fileSystemManagement/file-system-management-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/invalidationTaskAggregator/invalidation-task-aggregator-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/oauthManagement/oauth-management-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/processHardDeletes/process-hard-deletes-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/processPathRename/process-path-rename-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/searchUpdater/search-updater-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/thumbnails/thumbnails-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/userDeletionManagement/user-deletion-management-deployment.yaml');
+  await kubectl.apply('./ellipsisDrive/emu/userHistoryAppender/user-history-appender-deployment.yaml');
+}
+
+async function createClusterWorkers(config) {
+  await kubectl.apply('./ellipsisDrive/dodo/vector-worker.yaml');
+  await kubectl.apply('./ellipsisDrive/hawk/raster-worker.yaml');
+  await kubectl.apply('./ellipsisDrive/heron/point-cloud-worker.yaml');
+  await kubectl.apply('./ellipsisDrive/hummingbird/export-worker.yaml');
+  await kubectl.apply('./ellipsisDrive/sparrow/import-worker.yaml');
 }

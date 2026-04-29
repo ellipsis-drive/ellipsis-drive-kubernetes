@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: raster-worker
+  labels:
+    ellipsis-drive: raster-worker
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      ellipsis-drive: raster-worker
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: raster-worker
+    spec:
+      containers:
+      - name: raster-worker
+        image: ghcr.io/ellipsis-drive/raster-worker:latest
+        resources:
+          requests:
+            cpu: 4
+            memory: 32Gi
+        env:
+          - name: POSTGRES_APP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: owl-db-password
+                key: password
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+        volumeMounts:
+          - name: etmpfs
+            mountPath: /mnt/etmpfs
+          - name: tmpfs
+            mountPath: /mnt/tmpfs 
+          - name: finch-1
+            mountPath: /mnt/finch-1-eu-central-1
+      imagePullSecrets:
+        - name: ghcr-secret
+      volumes:
+        - name: etmpfs
+          persistentVolumeClaim:
+            claimName: etmpfs
+        - name: tmpfs
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
+        - name: finch-1
+          persistentVolumeClaim:
+            claimName: finch-1

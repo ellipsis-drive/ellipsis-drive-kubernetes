@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-sender
+  labels:
+    ellipsis-drive: email-sender
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: email-sender
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: email-sender
+    spec:
+      containers:
+      - name: email-sender
+        image: ghcr.io/ellipsis-drive/email-sender:latest
+        resources:
+          requests:
+            cpu: 100m
+        env:
+          - name: POSTGRES_APP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: owl-db-password
+                key: password
+          - name: NOREPLY_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: noreply-mail
+                key: username
+          - name: NOREPLY_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: noreply-mail
+                key: password
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+      imagePullSecrets:
+        - name: ghcr-secret

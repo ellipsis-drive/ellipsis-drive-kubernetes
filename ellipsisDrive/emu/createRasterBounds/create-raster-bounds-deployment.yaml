@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: create-raster-bounds
+  labels:
+    ellipsis-drive: create-raster-bounds
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: create-raster-bounds
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: create-raster-bounds
+    spec:
+      containers:
+      - name: create-raster-bounds
+        image: ghcr.io/ellipsis-drive/create-raster-bounds:latest
+        resources:
+          requests:
+            cpu: 100m
+        env:
+          - name: POSTGRES_APP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: owl-db-password
+                key: password
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+        volumeMounts:
+          - name: etmpfs
+            mountPath: /mnt/etmpfs
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      volumes:
+        - name: etmpfs
+          persistentVolumeClaim:
+            claimName: etmpfs

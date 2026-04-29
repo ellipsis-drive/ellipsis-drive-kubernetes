@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: invalidation-task-aggregator
+  labels:
+    ellipsis-drive: invalidation-task-aggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: invalidation-task-aggregator
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: invalidation-task-aggregator
+    spec:
+      containers:
+      - name: invalidation-task-aggregator
+        image: ghcr.io/ellipsis-drive/invalidation-task-aggregator:latest
+        resources:
+          requests:
+            cpu: 100m
+        env:
+          - name: POSTGRES_APP_PASS
+            valueFrom:
+              secretKeyRef:
+                name: owl-db-password
+                key: password
+          - name: INTERNAL_MAIL
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: username
+          - name: INTERNAL_MAIL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: internal-mail
+                key: password
+        envFrom:
+          - configMapRef:
+              name: ellipsis
+      imagePullSecrets:
+        - name: ghcr-secret

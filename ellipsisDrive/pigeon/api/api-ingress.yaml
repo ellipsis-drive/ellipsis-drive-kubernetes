@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing  # public internet access
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/target-type: ip   # route to Pod IPs
+    alb.ingress.kubernetes.io/certificate-arn: <<<apiCertificate>>>
+spec:
+  ingressClassName: alb
+  rules:
+    - host: <<<apiUrl>>>          # your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api                   # name of your Service
+                port:
+                  number: 7556
