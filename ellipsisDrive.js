@@ -1,5 +1,6 @@
 const { Command } = require('commander');
 const program = new Command();
+const fs = require('fs');
 
 const loadConfig = require('./ellipsisDrive/loadConfig');
 const ellipsisCluster = require('./ellipsisDrive/ellipsisCluster');
@@ -7,8 +8,8 @@ const ellipsisCluster = require('./ellipsisDrive/ellipsisCluster');
 async function ellipsisDrive() {
   program
     .version('1.0.0')
-    .name('Ellipsis Drive Kubernetes')
-    .description('Ellipsis Drive Kubernetes setup and maintenance tool.')
+    .name('node ellipsisDrive.js')
+    .description('Ellipsis Drive Kubernetes Command Line Interface (EDK CLI)')
     .executableDir('./ellipsisDrive')
 
   const configure = program.command('configure').action(() => {
@@ -37,6 +38,12 @@ async function ellipsisDrive() {
     ellipsisCluster.deleteCluster(config);
 
     // console.log('Delete done');
+  });
+
+  const version = program.command('version').action(() => {
+    let version = fs.readFileSync('version.txt');
+    console.log(`Ellipsis Drive Kubernetes Command Line Interface (EDK CLI)`);
+    console.log(`Version ${version}`);
   });
 
   program.parse();
