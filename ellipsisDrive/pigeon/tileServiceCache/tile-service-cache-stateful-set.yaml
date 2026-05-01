@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tile-service-cache
+  labels:
+    ellipsis-drive: tile-service-cache
+spec:
+  serviceName: tile-service-cache
+  replicas: 1
+  selector:
+    matchLabels:
+      ellipsis-drive: tile-service-cache
+  template:
+    metadata:
+      labels:
+        ellipsis-drive: tile-service-cache
+    spec:
+      securityContext:
+        fsGroup: 1623
+        runAsGroup: 1623
+        runAsNonRoot: true
+        runAsUser: 1623
+      containers:
+        - name: tile-service-cache
+          image: ghcr.io/ellipsis-drive/tile-service-cache:latest
+          resources:
+            requests:
+              cpu: 100m
+          ports:
+            - containerPort: 8738
+          envFrom:
+          - configMapRef:
+              name: ellipsis
+          volumeMounts:
+            - name: tile-service-cache
+              mountPath: /mnt/tileServiceCache
+      imagePullSecrets:
+        - name: ghcr-secret
+  volumeClaimTemplates:
+    - metadata:
+        name: tile-service-cache
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: ebs-sc
+        resources:
+          requests:
+            storage: 10Gi
